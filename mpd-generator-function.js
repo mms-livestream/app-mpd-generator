@@ -45,7 +45,7 @@ function mpdGenerator() {
 <Representation id="3" mimeType="video/mp4" codecs="avc1.4d4028" width="640" height="480" frameRate="24" sar="4:3" startWithSAP="1" bandwidth="2000000"></Representation>
 </AdaptationSet>
 </Period>
-</MPD>`
+</MPD> `
     
     
     
@@ -57,13 +57,7 @@ function mpdGenerator() {
 }); 
 }
 
-function rename(){
-  fs.rename('/mpd.xml', '/mdp.mpd', function(err) {
-    if ( err ) console.log('ERROR: ' + err);
-});
-}
 
 
 mpdGenerator();
-rename();
 
