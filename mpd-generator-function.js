@@ -2,7 +2,7 @@
 function mpdGenerator() {
 
     var date = new Date();
-    var hour = date.getHours();
+    var hour = date.getHours() - 2;
     hour = (hour < 10 ? "0" : "") + hour;
     var min  = date.getMinutes();
     min = (min < 10 ? "0" : "") + min;
