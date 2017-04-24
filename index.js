@@ -4,21 +4,16 @@
 
 //Dependencies
 
-
 let express = require("express");
 let core = require("mms-core");
 let Promise = require("bluebird"); //jshint ignore:line
 
 let serverAPI = require("./api/server/module.js");
-let serviceAPI = require("./api/server/module.js");
-
+let serviceAPI = require("./api/service/module.js");
 
 let app = express();
 
-
-
-
-class MpdgGenerator {
+class MPDGenerator {
   constructor() {
     this.node = "NODE_MPD_GENERATOR";
     this.service = new core.Service(this.node, serviceAPI);
@@ -33,7 +28,5 @@ class MpdgGenerator {
 
 //Main
 
-let mpdGenerator = new MpdgGenerator();
-
-mpdGenerator.server.listen();
-
+let mpdGenerator = new MPDGenerator();
+mpdGenerator.service.listen();

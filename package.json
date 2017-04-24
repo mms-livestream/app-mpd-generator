@@ -15,5 +15,12 @@
   "bugs": {
     "url": "https://github.com/mms-livestream/app-mpd-generator/issues"
   },
-  "homepage": "https://github.com/mms-livestream/app-mpd-generator#readme"
+  "homepage": "https://github.com/mms-livestream/app-mpd-generator#readme",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "body-parser": "^1.17.1",
+    "express": "^4.15.2",
+    "mms-core": "^0.1.17",
+    "seneca": "^3.3.0"
+  }
 }
