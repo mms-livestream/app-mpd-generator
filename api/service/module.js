@@ -17,7 +17,7 @@ function generateMPD() {
 
 
     let date = new Date();
-    let hour = date.getHours() - 2;
+    let hour = date.getHours() - 1;
     hour = (hour < 10 ? "0" : "") + hour;
     let min  = date.getMinutes();
     min = (min < 10 ? "0" : "") + min;
