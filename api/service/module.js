@@ -12,7 +12,7 @@ function generateMPD() {
 
   for (let i = 0; i < arguments[1].length; i++) {
     id = arguments[0];
-    servers += `<BaseURL>http://${arguments[1][i]}:8080/api/description/${id}/</BaseURL> \n`;
+    servers += `<BaseURL>${arguments[1][i]}:8080/api/description/${id}/</BaseURL>`;
   }
 
 
