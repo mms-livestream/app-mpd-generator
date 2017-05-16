@@ -6,13 +6,11 @@
 
 const Promise = require('bluebird');  //jshint ignore:line
 
-function generateMPD() {
-  let servers="";
-  let id;
+function generateMPD(id_uploader, servers) {
+  let serversURLs="";
 
-  for (let i = 0; i < arguments[1].length; i++) {
-    id = arguments[0];
-    servers += `<BaseURL>${arguments[1][i]}:8080/api/description/${id}/</BaseURL>`;
+  for (let i = 0; i < servers.length; i++) {
+    serversURLs += `<BaseURL>${servers[i]}:8080/api/description/${id_uploader}/</BaseURL>`;
   }
 
 
@@ -48,7 +46,7 @@ function generateMPD() {
 
 <AdaptationSet segmentAlignment="true" maxWidth="640" maxHeight="480" maxFrameRate="24" par="16:9" lang="und">
 
-${servers}
+${serversURLs}
 
 <SegmentTemplate timescale="12288" media="$Bandwidth$/out$Bandwidth$_dash$Number$.m4s" startNumber="2" duration="98304" initialization="$Bandwidth$/out$Bandwidth$_dash.mp4"/>
 <Representation id="1" mimeType="video/mp4" codecs="avc1.4d4028" width="640" height="480" frameRate="24" sar="4:3" startWithSAP="1" bandwidth="500000"></Representation>
@@ -82,7 +80,7 @@ module.exports = function (options) {
         validation.then(() => {
         })
         .then(() => {return new Promise( (resolve, reject) => {
-            let MPDString = generateMPD(msg.id_viewer, msg.servers);
+            let MPDString = generateMPD(msg.id_uploader, msg.servers);
             respond(null, { 'code': 200 , 'status': "MPD string generated succesfully", "data": MPDString});
             resolve();
         });})
