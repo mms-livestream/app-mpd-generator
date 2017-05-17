@@ -6,19 +6,23 @@
 
 const Promise = require('bluebird');  //jshint ignore:line
 
-function generateMPD(id_uploader, servers, initialTime) {
+function generateMPD(id_uploader, servers, PREVinitialTime, PREVid_video) {
     let serversURLs="";
     let availabilityStartTime = "";
     let publishTime = "";
 
     //Generating the live servers URLs
     for (let i = 0; i < servers.length; i++) {
-      serversURLs += `<BaseURL>${servers[i]}:8080/api/description/${id_uploader}/</BaseURL>`;
+      serversURLs += `<BaseURL>http://${servers[i]}:8080/api/description/${id_uploader}/</BaseURL>`;
     }
 
-    //First time generating MPD
-    if (typeof initialTime === "undefined") {
-      console.log("First time generating MPD");
+    //First time generating MPD or changing video
+    console.log(PREVinitialTime);
+    console.log(typeof id_uploader);
+    console.log(typeof PREVid_video);
+    console.log((id_uploader !== PREVid_video));
+    if (typeof PREVinitialTime === "undefined" || (id_uploader !== PREVid_video)) {
+      console.log("First time generating MPD or changing video");
       let date = new Date();
       let hour = date.getHours() - 2;
       hour = (hour < 10 ? "0" : "") + hour;
@@ -39,9 +43,9 @@ function generateMPD(id_uploader, servers, initialTime) {
       publishTime = year + "-" + month + "-" + day + "T" + hour + ":" + min + ":" + secPublish + ".000";
 
     } else {  //MPD already generated : maintaining initial time
-      console.log("MPD already generated : maintaining initial time");
-      availabilityStartTime = initialTime;
-      publishTime = initialTime;
+      console.log("MPD already generated and same video : maintaining initial time");
+      availabilityStartTime = PREVinitialTime;
+      publishTime = PREVinitialTime;
     }
 
     let mpd =
@@ -90,7 +94,7 @@ module.exports = function (options) {
         })
         .then(() => {return new Promise( (resolve, reject) => {
             console.log(`Generating MPD with ${msg}`);
-            let MPDString = generateMPD(msg.id_uploader, msg.servers, msg.initialTime);   //initialTime defined only when MPD already generated
+            let MPDString = generateMPD(msg.id_uploader, msg.servers, msg.PREVinitialTime, msg.PREVid_video);   //PREVinitialTime defined only when MPD already generated
             respond(null, { 'code': 200 , 'status': "MPD string generated succesfully", "data": MPDString});
             resolve();
         });})
