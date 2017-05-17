@@ -6,34 +6,43 @@
 
 const Promise = require('bluebird');  //jshint ignore:line
 
-function generateMPD(id_uploader, servers) {
-  let serversURLs="";
+function generateMPD(id_uploader, servers, initialTime) {
+    let serversURLs="";
+    let availabilityStartTime = "";
+    let publishTime = "";
 
-  for (let i = 0; i < servers.length; i++) {
-    serversURLs += `<BaseURL>${servers[i]}:8080/api/description/${id_uploader}/</BaseURL>`;
-  }
+    //Generating the live servers URLs
+    for (let i = 0; i < servers.length; i++) {
+      serversURLs += `<BaseURL>${servers[i]}:8080/api/description/${id_uploader}/</BaseURL>`;
+    }
 
+    //First time generating MPD
+    if (typeof initialTime === "undefined") {
+      console.log("First time generating MPD");
+      let date = new Date();
+      let hour = date.getHours() - 2;
+      hour = (hour < 10 ? "0" : "") + hour;
+      let min  = date.getMinutes();
+      min = (min < 10 ? "0" : "") + min;
+      let secAvailability  = date.getSeconds() + 0;//see for the time
+      secAvailability = (secAvailability < 10 ? "0" : "") + secAvailability;
+      let secPublish  = date.getSeconds() + 0; //see for the time
+      secPublish = (secPublish < 10 ? "0" : "") + secPublish;
+      let year = date.getFullYear();
+      let month = date.getMonth() + 1;
+      month = (month < 10 ? "0" : "") + month;
+      let day  = date.getDate();
+      day = (day < 10 ? "0" : "") + day;
 
-    let date = new Date();
-    let hour = date.getHours() - 1;
-    hour = (hour < 10 ? "0" : "") + hour;
-    let min  = date.getMinutes();
-    min = (min < 10 ? "0" : "") + min;
-    let secAvailability  = date.getSeconds() + 0;//see for the time
-    secAvailability = (secAvailability < 10 ? "0" : "") + secAvailability;
-    let secPublish  = date.getSeconds() + 0; //see for the time
-    secPublish = (secPublish < 10 ? "0" : "") + secPublish;
+      //Format : YYYY:MM:DD:HH:MM:SS
+      availabilityStartTime = year + "-" + month + "-" + day + "T" + hour + ":" + min + ":" + secAvailability + ".000";
+      publishTime = year + "-" + month + "-" + day + "T" + hour + ":" + min + ":" + secPublish + ".000";
 
-    let year = date.getFullYear();
-    let month = date.getMonth() + 1;
-    month = (month < 10 ? "0" : "") + month;
-    let day  = date.getDate();
-    day = (day < 10 ? "0" : "") + day;
-
-    let availabilityStartTime = year + "-" + month + "-" + day + "T" + hour + ":" + min + ":" + secAvailability + ".000";
-    //YYYY:MM:DD:HH:MM:SS
-    let publishTime = year + "-" + month + "-" + day + "T" + hour + ":" + min + ":" + secPublish + ".000";
-
+    } else {  //MPD already generated : maintaining initial time
+      console.log("MPD already generated : maintaining initial time");
+      availabilityStartTime = initialTime;
+      publishTime = initialTime;
+    }
 
     let mpd =
 
@@ -80,7 +89,8 @@ module.exports = function (options) {
         validation.then(() => {
         })
         .then(() => {return new Promise( (resolve, reject) => {
-            let MPDString = generateMPD(msg.id_uploader, msg.servers);
+            console.log(`Generating MPD with ${msg}`);
+            let MPDString = generateMPD(msg.id_uploader, msg.servers, msg.initialTime);   //initialTime defined only when MPD already generated
             respond(null, { 'code': 200 , 'status': "MPD string generated succesfully", "data": MPDString});
             resolve();
         });})
