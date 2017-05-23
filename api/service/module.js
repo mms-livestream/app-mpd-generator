@@ -6,10 +6,38 @@
 
 const Promise = require('bluebird');  //jshint ignore:line
 
-function generateMPD(id_uploader, servers, PREVinitialTime, PREVid_video) {
+
+function formatTimeMPD(date) {
+  console.log("testdate");
+  console.log(date);
+  console.log(date.getHours);
+  console.log("ok");
+  let hour = date.getHours() - 2;
+  hour = (hour < 10 ? "0" : "") + hour;
+  let min  = date.getMinutes();
+  min = (min < 10 ? "0" : "") + min;
+  let secAvailability  = date.getSeconds() + 0;//see for the time
+  secAvailability = (secAvailability < 10 ? "0" : "") + secAvailability;
+  let year = date.getFullYear();
+  let month = date.getMonth() + 1;
+  month = (month < 10 ? "0" : "") + month;
+  let day  = date.getDate();
+  day = (day < 10 ? "0" : "") + day;
+
+  //Format : YYYY:MM:DD:HH:MM:SS
+  let formatTime = year + "-" + month + "-" + day + "T" + hour + ":" + min + ":" + secAvailability + ".000";
+
+  return formatTime;
+}
+
+
+
+function generateMPD(id_uploader, servers, PREVinitialTime, PREVid_video, publishTimeRaw) {
     let serversURLs="";
-    let availabilityStartTime = "";
+    let availabilityStartTime = ""
     let publishTime = "";
+    let dateNow = new Date();
+    //let publishTime = formatTimeMPD(publishTimeRaw);
 
     //Generating the live servers URLs
     for (let i = 0; i < servers.length; i++) {
@@ -21,9 +49,16 @@ function generateMPD(id_uploader, servers, PREVinitialTime, PREVid_video) {
     console.log(typeof id_uploader);
     console.log(typeof PREVid_video);
     console.log((id_uploader !== PREVid_video));
+
+    publishTimeRaw.setSeconds(publishTimeRaw.getSeconds() + 30);  //fix add delay fix
+    availabilityStartTime = formatTimeMPD(publishTimeRaw);  //fix inversed
+
     if (typeof PREVinitialTime === "undefined" || (id_uploader !== PREVid_video)) {
       console.log("First time generating MPD or changing video");
-      let date = new Date();
+
+
+      //console.log("outside");
+      /*
       let hour = date.getHours() - 2;
       hour = (hour < 10 ? "0" : "") + hour;
       let min  = date.getMinutes();
@@ -36,16 +71,22 @@ function generateMPD(id_uploader, servers, PREVinitialTime, PREVid_video) {
       let month = date.getMonth() + 1;
       month = (month < 10 ? "0" : "") + month;
       let day  = date.getDate();
-      day = (day < 10 ? "0" : "") + day;
+      day = (day < 10 ? "0" : "") + day;*/
+
+
+      publishTime = formatTimeMPD(dateNow);
+
 
       //Format : YYYY:MM:DD:HH:MM:SS
-      availabilityStartTime = year + "-" + month + "-" + day + "T" + hour + ":" + min + ":" + secAvailability + ".000";
-      publishTime = year + "-" + month + "-" + day + "T" + hour + ":" + min + ":" + secPublish + ".000";
+      //availabilityStartTime = year + "-" + month + "-" + day + "T" + hour + ":" + min + ":" + secAvailability + ".000";
+      //publishTime = year + "-" + month + "-" + day + "T" + hour + ":" + min + ":" + secPublish + ".000";
 
     } else {  //MPD already generated : maintaining initial time
-      console.log("MPD already generated and same video : maintaining initial time");
-      availabilityStartTime = PREVinitialTime;
-      publishTime = PREVinitialTime;
+      console.log("MPD already generated and same video");
+
+      publishTime = formatTimeMPD(dateNow);
+      //availabilityStartTime = PREVinitialTime;
+      //publishTime = PREVinitialTime;
     }
 
     let mpd =
@@ -61,7 +102,7 @@ function generateMPD(id_uploader, servers, PREVinitialTime, PREVid_video) {
 
 ${serversURLs}
 
-<SegmentTemplate timescale="12288" media="$Bandwidth$/out$Bandwidth$_dash$Number$.m4s" startNumber="2" duration="98304" initialization="$Bandwidth$/out$Bandwidth$_dash.mp4"/>
+<SegmentTemplate media="$Bandwidth$/out$Bandwidth$_dash$Number$.m4s" startNumber="1" duration="6" initialization="$Bandwidth$/out$Bandwidth$_dash.mp4"/>
 <Representation id="1" mimeType="video/mp4" codecs="avc1.4d4028" width="640" height="480" frameRate="24" sar="4:3" startWithSAP="1" bandwidth="500000"></Representation>
 <Representation id="2" mimeType="video/mp4" codecs="avc1.4d4028" width="640" height="480" frameRate="24" sar="4:3" startWithSAP="1" bandwidth="1000000"></Representation>
 <Representation id="3" mimeType="video/mp4" codecs="avc1.4d4028" width="640" height="480" frameRate="24" sar="4:3" startWithSAP="1" bandwidth="2000000"></Representation>
@@ -94,7 +135,7 @@ module.exports = function (options) {
         })
         .then(() => {return new Promise( (resolve, reject) => {
             console.log(`Generating MPD with ${msg}`);
-            let MPDString = generateMPD(msg.id_uploader, msg.servers, msg.PREVinitialTime, msg.PREVid_video);   //PREVinitialTime defined only when MPD already generated
+            let MPDString = generateMPD(msg.id_uploader, msg.servers, msg.PREVinitialTime, msg.PREVid_video, new Date(msg.publishTime));   //PREVinitialTime defined only when MPD already generated
             respond(null, { 'code': 200 , 'status': "MPD string generated succesfully", "data": MPDString});
             resolve();
         });})
